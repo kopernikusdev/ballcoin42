@@ -1891,9 +1891,9 @@ STAKING</translation>
     </message>
     <message>
         <source>Language missing or translation incomplete? Help contributing translations here:
-https://www.transifex.com/pivx-project/pivx-project-translations</source>
+https://www.transifex.com/kopernikusdev/ballcoin42-project-translations</source>
         <translation>Language missing or translation incomplete? Help contributing translations here:
-https://www.transifex.com/pivx-project/pivx-project-translations</translation>
+https://www.transifex.com/kopernikusdev/ballcoin42-project-translations</translation>
     </message>
     <message>
         <source>Map port using &amp;UPnP</source>
