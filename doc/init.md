@@ -129,13 +129,13 @@ setting the PIVXD and FLAGS environment variables in the file
 
 ### macOS
 
-Copy org.pivx.pivxd.plist into ~/Library/LaunchAgents. Load the launch agent by
-running `launchctl load ~/Library/LaunchAgents/org.pivx.pivxd.plist`.
+Copy com.ball-coin.pivxd.plist into ~/Library/LaunchAgents. Load the launch agent by
+running `launchctl load ~/Library/LaunchAgents/com.ball-coin.pivxd.plist`.
 
 This Launch Agent will cause pivxd to start whenever the user logs in.
 
 NOTE: This approach is intended for those wanting to run pivxd as the current user.
-You will need to modify org.pivx.pivxd.plist if you intend to use it as a
+You will need to modify com.ball-coin.pivxd.plist if you intend to use it as a
 Launch Daemon with a dedicated pivx user.
 
 Auto-respawn
