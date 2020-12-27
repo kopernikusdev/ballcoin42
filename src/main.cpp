@@ -1523,9 +1523,20 @@ int64_t GetBlockValue(int nHeight)
     return nSubsidy;
 }
 
-int64_t GetMasternodePayment()
+int64_t GetMasternodePayment(int nHeight, int64_t blockValue)
 {
-    return 3 * COIN;
+	int64_t ret = 0;
+
+	const Consensus::Params& consensus = Params().GetConsensus();
+	const bool isPoSActive = consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_POS);
+
+	if (!isPoSActive) {
+		ret = 0;
+	} else  {
+		ret = blockValue * 0.80;  //80%;
+	}
+
+	return ret;
 }
 
 bool IsInitialBlockDownload()
@@ -3337,8 +3348,12 @@ bool CheckColdStakeFreeOutput(const CTransaction& tx, const int nHeight)
     const unsigned int outs = tx.vout.size();
     const CTxOut& lastOut = tx.vout[outs-1];
     if (outs >=3 && lastOut.scriptPubKey != tx.vout[outs-2].scriptPubKey) {
-        if (lastOut.nValue == GetMasternodePayment())
-            return true;
+        
+		CAmount blockValue = GetBlockValue(nHeight);
+		CAmount masternodePayment = GetMasternodePayment(nHeight, blockValue);
+
+		if (lastOut.nValue == masternodePayment)
+			return true;
 
         // This could be a budget block.
         if (Params().IsRegTestNet())
