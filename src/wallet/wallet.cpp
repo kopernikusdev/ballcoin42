@@ -1,7 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2020 The PIVX developers
+// Copyright (c) 2015-2020 The BALLCOIN developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -18,7 +18,7 @@
 #include "swifttx.h"    // mapTxLockReq
 #include "util.h"
 #include "utilmoneystr.h"
-#include "zpivchain.h"
+#include "zballchain.h"
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/thread.hpp>
@@ -36,7 +36,7 @@ bool fSendFreeTransactions = false;
 bool fPayAtLeastCustomFee = true;
 
 /**
- * Fees smaller than this (in upiv) are considered zero fee (for transaction creation)
+ * Fees smaller than this (in uball) are considered zero fee (for transaction creation)
  * We are ~100 times smaller then bitcoin now (2015-06-23), set minTxFee 10 times higher
  * so it's still 10 times lower comparing to bitcoin.
  * Override with -mintxfee
@@ -352,7 +352,7 @@ bool CWallet::Unlock(const CKeyingMaterial& vMasterKeyIn)
             if (CWalletDB(strWalletFile).ReadCurrentSeedHash(hashSeed)) {
                 uint256 nSeed;
                 if (!GetDeterministicSeed(hashSeed, nSeed)) {
-                    return error("Failed to read zPIV seed from DB. Wallet is probably corrupt.");
+                    return error("Failed to read zBALL seed from DB. Wallet is probably corrupt.");
                 }
                 zwalletMain->SetMasterSeed(nSeed, false);
             }
@@ -1606,9 +1606,9 @@ int CWallet::ScanForWalletTransactions(CBlockIndex* pindexStart, bool fUpdate, b
 {
     int ret = 0;
     int64_t nNow = GetTime();
-    bool fCheckZPIV = GetBoolArg("-zapwallettxes", false);
-    if (fCheckZPIV)
-        zpivTracker->Init();
+    bool fCheckZBALL = GetBoolArg("-zapwallettxes", false);
+    if (fCheckZBALL)
+        zballTracker->Init();
 
     const Consensus::Params& consensus = Params().GetConsensus();
 
@@ -1641,8 +1641,8 @@ int CWallet::ScanForWalletTransactions(CBlockIndex* pindexStart, bool fUpdate, b
                     ret++;
             }
 
-            // Will try to rescan it if zPIV upgrade is active.
-            doZPivRescan(pindex, block, setAddedToWallet, consensus, fCheckZPIV);
+            // Will try to rescan it if zBALL upgrade is active.
+            doZBallRescan(pindex, block, setAddedToWallet, consensus, fCheckZBALL);
 
             pindex = chainActive.Next(pindex);
             if (GetTime() >= nNow + 60) {
@@ -2039,7 +2039,7 @@ bool CWallet::GetMasternodeVinAndKeys(CTxIn& txinRet, CPubKey& pubKeyRet, CKey& 
 
     // Masternode collateral value
     if (txOut.nValue != 10000 * COIN) {
-        strError = "Invalid collateral tx value, must be 10,000 PIV";
+        strError = "Invalid collateral tx value, must be 10,000 BALL";
         return error("%s: tx %s, index %d not a masternode collateral", __func__, strTxHash, nOutputIndex);
     }
 
@@ -2393,7 +2393,7 @@ bool CWallet::GetBudgetSystemCollateralTX(CWalletTx& tx, uint256 hash, bool useI
     CAmount nFeeRet = 0;
     std::string strFail = "";
     std::vector<CRecipient> vecSend;
-    vecSend.push_back(CRecipient{scriptChange, BUDGET_FEE_TX_OLD, false}); // Old 50 PIV collateral
+    vecSend.push_back(CRecipient{scriptChange, BUDGET_FEE_TX_OLD, false}); // Old 50 BALL collateral
 
     CCoinControl* coinControl = NULL;
     int nChangePosInOut = -1;
@@ -2417,7 +2417,7 @@ bool CWallet::GetBudgetFinalizationCollateralTX(CWalletTx& tx, uint256 hash, boo
     CAmount nFeeRet = 0;
     std::string strFail = "";
     std::vector<CRecipient> vecSend;
-    vecSend.push_back(CRecipient{scriptChange, BUDGET_FEE_TX, false}); // New 5 PIV collateral
+    vecSend.push_back(CRecipient{scriptChange, BUDGET_FEE_TX, false}); // New 5 BALL collateral
 
     CCoinControl* coinControl = NULL;
     int nChangePosInOut = -1;
@@ -2599,7 +2599,7 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend,
                 if (nChange > 0) {
                     // Fill a vout to ourself
                     // TODO: pass in scriptChange instead of reservekey so
-                    // change transaction isn't always pay-to-pivx-address
+                    // change transaction isn't always pay-to-ballcoin-address
                     bool combineChange = false;
 
                     // coin control: send change to custom address
@@ -2773,10 +2773,10 @@ bool CWallet::CreateCoinStake(
         return false;
     }
 
-    // Parse utxos into CPivStakes
+    // Parse utxos into CBallStakes
     std::list<std::unique_ptr<CStakeInput> > listInputs;
     for (const COutput &out : vCoins) {
-        std::unique_ptr<CPivStake> input(new CPivStake());
+        std::unique_ptr<CBallStake> input(new CBallStake());
         input->SetPrevout((CTransaction) *out.tx, out.i);
         listInputs.emplace_back(std::move(input));
     }
@@ -2805,7 +2805,7 @@ bool CWallet::CreateCoinStake(
         if (IsLocked() || ShutdownRequested()) return false;
 
         // This should never happen
-        if (stakeInput->IsZPIV()) {
+        if (stakeInput->IsZBALL()) {
             LogPrintf("%s: ERROR - zPOS is disabled\n", __func__);
             continue;
         }
@@ -2879,7 +2879,7 @@ bool CWallet::CreateCoinStake(
     if (!fKernelFound)
         return false;
 
-    // Sign for PIV
+    // Sign for BALL
     int nIn = 0;
     if (!txNew.vin[0].scriptSig.IsZerocoinSpend()) {
         for (CTxIn txIn : txNew.vin) {
@@ -2899,13 +2899,13 @@ bool CWallet::CreateCoinStake(
                 return error("%s: extracting pubcoin from txout failed", __func__);
 
             uint256 hashPubcoin = GetPubCoinHash(pubcoin.getValue());
-            if (!zpivTracker->HasPubcoinHash(hashPubcoin))
+            if (!zballTracker->HasPubcoinHash(hashPubcoin))
                 return error("%s: could not find pubcoinhash %s in tracker", __func__, hashPubcoin.GetHex());
 
-            CMintMeta meta = zpivTracker->GetMetaFromPubcoin(hashPubcoin);
+            CMintMeta meta = zballTracker->GetMetaFromPubcoin(hashPubcoin);
             meta.txid = txNew.GetHash();
             meta.nHeight = chainActive.Height() + 1;
-            if (!zpivTracker->UpdateState(meta))
+            if (!zballTracker->UpdateState(meta))
                 return error("%s: failed to update metadata in tracker", __func__);
         }
     }
@@ -4001,7 +4001,7 @@ void CWallet::SetNull()
     // Stake split threshold
     nStakeSplitThreshold = DEFAULT_STAKE_SPLIT_THRESHOLD;
 
-    // User-defined fee PIV/kb
+    // User-defined fee BALL/kb
     fUseCustomFee = false;
     nCustomFee = CWallet::minTxFee.GetFeePerK();
 
