@@ -1500,6 +1500,11 @@ double ConvertBitsToDouble(unsigned int nBits)
 
 int64_t GetBlockValue(int nHeight)
 {
+	//nHeight-1 to account for the historical bug (this function was called
+	//passing the previous blockheight, instead of the current block height)
+	// See (github/pivx) issue #814 and PR #967
+	// See issue #814 and PR #967 on pivx-github
+	if (nHeight) nHeight--;
     if (Params().NetworkID() == CBaseChainParams::TESTNET) {
         if (nHeight < 200 && nHeight > 0)
             return 250000 * COIN;
@@ -1516,41 +1521,41 @@ int64_t GetBlockValue(int nHeight)
     int64_t nSubsidy = 0;
     if (nHeight == 0) {
         nSubsidy = 60001 * COIN;
-    } else if (nHeight < 86400 && nHeight > 0) {
+    } else if (nHeight < 1000 && nHeight >0) {
         nSubsidy = 250 * COIN;
-    } else if (nHeight < (Params().NetworkID() == CBaseChainParams::TESTNET ? 145000 : 151200) && nHeight >= 86400) {
-        nSubsidy = 225 * COIN;
-    } else if (nHeight >= 151200 && !isPoSActive) {
-        nSubsidy = 45 * COIN;
-    } else if (isPoSActive && nHeight <= 302399) {
-        nSubsidy = 45 * COIN;
-    } else if (nHeight <= 345599 && nHeight >= 302400) {
-        nSubsidy = 40.5 * COIN;
-    } else if (nHeight <= 388799 && nHeight >= 345600) {
-        nSubsidy = 36 * COIN;
-    } else if (nHeight <= 431999 && nHeight >= 388800) {
-        nSubsidy = 31.5 * COIN;
-    } else if (nHeight <= 475199 && nHeight >= 432000) {
-        nSubsidy = 27 * COIN;
-    } else if (nHeight <= 518399 && nHeight >= 475200) {
-        nSubsidy = 22.5 * COIN;
-    } else if (nHeight <= 561599 && nHeight >= 518400) {
-        nSubsidy = 18 * COIN;
-    } else if (nHeight <= 604799 && nHeight >= 561600) {
-        nSubsidy = 13.5 * COIN;
-    } else if (nHeight <= 647999 && nHeight >= 604800) {
-        nSubsidy = 9 * COIN;
-    } else if (!consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_ZC_V2)) {
-        nSubsidy = 4.5 * COIN;
-    } else {
-        nSubsidy = 5 * COIN;
+    } else if (nHeight < 86400 && nHeight >=1000) {
+        nSubsidy = 250 * COIN;
+    //} else if (nHeight < 105000 && nHeight >= 15000) {
+    } else if (nHeight >= 15000) {    
+        nSubsidy = 4 * COIN;
+    //} else if (nHeight < 195000 && nHeight >= 105000) {
+    //    nSubsidy = 5 * COIN;
+    //} else if (nHeight < 285000 && nHeight >= 195000) {
+    //    nSubsidy = 6 * COIN;
+    //} else if (nHeight < 375000 && nHeight >= 285000) {
+    //    nSubsidy = 7 * COIN;
+    //} else if (nHeight < 465000 && nHeight >= 375000) {
+    //    nSubsidy = 8 * COIN;
+    //} else if (nHeight < 555000 && nHeight >= 465000) {
+    //    nSubsidy = 9 * COIN;
+    //} else {
+    //    nSubsidy = 10 * COIN;
     }
     return nSubsidy;
 }
 
 int64_t GetMasternodePayment()
 {
-    return 3 * COIN;
+	const int nHeight = chainActive.Height();
+	int64_t ret = 0;
+
+    if (nHeight < 15000) {
+        ret = GetBlockValue(nHeight) / 5;
+    } else if (nHeight > 14999) {
+		ret = GetBlockValue(nHeight) * 0.80;  //80%;
+	}
+
+	return ret;
 }
 
 bool IsInitialBlockDownload()
@@ -2394,7 +2399,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     LogPrint(BCLog::BENCH, "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs]\n", (unsigned)block.vtx.size(), 0.001 * (nTime1 - nTimeStart), 0.001 * (nTime1 - nTimeStart) / block.vtx.size(), nInputs <= 1 ? 0 : 0.001 * (nTime1 - nTimeStart) / (nInputs - 1), nTimeConnect * 0.000001);
 
     //PoW phase redistributed fees to miner. PoS stage destroys fees.
-    CAmount nExpectedMint = GetBlockValue(pindex->pprev->nHeight);
+    CAmount nExpectedMint = GetBlockValue(pindex->nHeight);
     if (block.IsProofOfWork())
         nExpectedMint += nFees;
 
@@ -3400,7 +3405,7 @@ bool CheckColdStakeFreeOutput(const CTransaction& tx, const int nHeight)
             CTransaction txPrev; uint256 hashBlock;
             if (!GetTransaction(tx.vin[0].prevout.hash, txPrev, hashBlock, true))
                 return error("%s : read txPrev failed: %s",  __func__, tx.vin[0].prevout.hash.GetHex());
-            CAmount amtIn = txPrev.vout[tx.vin[0].prevout.n].nValue + GetBlockValue(nHeight - 1);
+            CAmount amtIn = txPrev.vout[tx.vin[0].prevout.n].nValue + GetBlockValue(nHeight);
             CAmount amtOut = 0;
             for (unsigned int i = 1; i < outs-1; i++) amtOut += tx.vout[i].nValue;
             if (amtOut != amtIn)
@@ -6048,7 +6053,7 @@ int ActiveProtocol()
     if (sporkManager.IsSporkActive(SPORK_14_NEW_PROTOCOL_ENFORCEMENT))
             return MIN_PEER_PROTO_VERSION_AFTER_ENFORCEMENT;
 
-    // SPORK_15 was used for 70918 (v4.0, v4.1.0), commented out now.
+    // SPORK_15 was used for 70917 (v4.0, v4.1.0), commented out now.
     //if (sporkManager.IsSporkActive(SPORK_15_NEW_PROTOCOL_ENFORCEMENT_2))
     //        return MIN_PEER_PROTO_VERSION_AFTER_ENFORCEMENT;
 

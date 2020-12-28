@@ -496,7 +496,7 @@ void CBudgetManager::FillBlockPayee(CMutableTransaction& txNew, bool fProofOfSta
         ++it;
     }
 
-    CAmount blockValue = GetBlockValue(chainHeight);
+    CAmount blockValue = GetBlockValue(chainHeight + 1);
 
     if (fProofOfStake) {
         if (nHighestCount > 0) {
