@@ -102,7 +102,7 @@ size_t nCoinCacheUsage = 5000 * 300;
 /* If the tip is older than this (in seconds), the node is considered to be in initial block download. */
 int64_t nMaxTipAge = DEFAULT_MAX_TIP_AGE;
 
-/** Fees smaller than this (in upiv) are considered zero fee (for relaying, mining and transaction creation)
+/** Fees smaller than this (in uball) are considered zero fee (for relaying, mining and transaction creation)
  * We are ~100 times smaller then bitcoin now (2015-06-23), set minRelayTxFee only 10 times higher
  * so it's still 10 times lower comparing to bitcoin.
  */
@@ -1502,8 +1502,8 @@ int64_t GetBlockValue(int nHeight)
 {
 	//nHeight-1 to account for the historical bug (this function was called
 	//passing the previous blockheight, instead of the current block height)
-	// See (github/pivx) issue #814 and PR #967
-	// See issue #814 and PR #967 on pivx-github
+	// See (github/ballx) issue #814 and PR #967
+	// See issue #814 and PR #967 on ballx-github
 	if (nHeight) nHeight--;
     if (Params().NetworkID() == CBaseChainParams::TESTNET) {
         if (nHeight < 200 && nHeight > 0)
@@ -3893,17 +3893,17 @@ bool AcceptBlock(const CBlock& block, CValidationState& state, CBlockIndex** ppi
         const CTransaction &stakeTxIn = block.vtx[1];
 
         // Inputs
-        std::vector<CTxIn> pivInputs;
+        std::vector<CTxIn> ballInputs;
         std::vector<CTxIn> zBALLInputs;
 
         for (const CTxIn& stakeIn : stakeTxIn.vin) {
             if(stakeIn.IsZerocoinSpend()){
                 zBALLInputs.push_back(stakeIn);
             }else{
-                pivInputs.push_back(stakeIn);
+                ballInputs.push_back(stakeIn);
             }
         }
-        const bool hasBALLInputs = !pivInputs.empty();
+        const bool hasBALLInputs = !ballInputs.empty();
         const bool hasZBALLInputs = !zBALLInputs.empty();
 
         // ZC started after PoS.
@@ -3944,8 +3944,8 @@ bool AcceptBlock(const CBlock& block, CValidationState& state, CBlockIndex** ppi
                 if(tx.IsCoinStake()) continue;
                 if(hasBALLInputs) {
                     // Check if coinstake input is double spent inside the same block
-                    for (const CTxIn& pivIn : pivInputs)
-                        if(pivIn.prevout == in.prevout)
+                    for (const CTxIn& ballIn : ballInputs)
+                        if(ballIn.prevout == in.prevout)
                             // double spent coinstake input inside block
                             return error("%s: double spent coinstake input inside block", __func__);
                 }
@@ -3989,7 +3989,7 @@ bool AcceptBlock(const CBlock& block, CValidationState& state, CBlockIndex** ppi
 
                         // Loop through every input of the staking tx
                         if (hasBALLInputs) {
-                            for (const CTxIn& stakeIn : pivInputs)
+                            for (const CTxIn& stakeIn : ballInputs)
                                 // check if the tx input is double spending any coinstake input
                                 if (stakeIn.prevout == in.prevout)
                                     return state.DoS(100, error("%s: input already spent on a previous block", __func__));

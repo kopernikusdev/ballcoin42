@@ -51,11 +51,11 @@ class ReorgStakeTest(BALLcoinTestFramework):
         wi = self.nodes[nodeid].getwalletinfo()
         return wi['balance'] + wi['immature_balance']
 
-    def check_money_supply(self, expected_piv, expected_zball):
+    def check_money_supply(self, expected_ball, expected_zball):
         g_info = [self.nodes[i].getinfo() for i in range(self.num_nodes)]
         # verify that nodes have the expected BALL and zBALL supply
         for node in g_info:
-            assert_equal(node['moneysupply'], DecimalAmt(expected_piv))
+            assert_equal(node['moneysupply'], DecimalAmt(expected_ball))
             for denom in node['zBALLsupply']:
                 assert_equal(node['zBALLsupply'][denom], DecimalAmt(expected_zball[denom]))
 

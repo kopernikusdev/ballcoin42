@@ -52,9 +52,9 @@ DashboardWidget::DashboardWidget(BALLCOINGUI* parent) :
 
     // Staking Information
     setCssSubtitleScreen(ui->labelMessage);
-    setCssProperty(ui->labelSquareBall, "square-chart-piv");
+    setCssProperty(ui->labelSquareBall, "square-chart-ball");
     setCssProperty(ui->labelSquarezBall, "square-chart-zball");
-    setCssProperty(ui->labelBall, "text-chart-piv");
+    setCssProperty(ui->labelBall, "text-chart-ball");
     setCssProperty(ui->labelZball, "text-chart-zball");
 
     // Staking Amount
@@ -62,7 +62,7 @@ DashboardWidget::DashboardWidget(BALLCOINGUI* parent) :
     fontBold.setWeight(QFont::Bold);
 
     setCssProperty(ui->labelChart, "legend-chart");
-    setCssProperty(ui->labelAmountBall, "text-stake-piv-disable");
+    setCssProperty(ui->labelAmountBall, "text-stake-ball-disable");
     setCssProperty(ui->labelAmountZball, "text-stake-zball-disable");
 
     setCssProperty({ui->pushButtonAll,  ui->pushButtonMonth, ui->pushButtonYear}, "btn-check-time");
@@ -590,11 +590,11 @@ bool DashboardWidget::loadChartData(bool withMonthNames)
 
     for (int j = range.first; j < range.second; j++) {
         int num = (isOrderedByMonth && j > daysInMonth) ? (j % daysInMonth) : j;
-        qreal piv = 0;
+        qreal ball = 0;
         qreal zball = 0;
         if (chartData->amountsByCache.contains(num)) {
             std::pair <qint64, qint64> pair = chartData->amountsByCache[num];
-            piv = (pair.first != 0) ? pair.first / 100000000 : 0;
+            ball = (pair.first != 0) ? pair.first / 100000000 : 0;
             zball = (pair.second != 0) ? pair.second / 100000000 : 0;
             chartData->totalBall += pair.first;
             chartData->totalZball += pair.second;
@@ -602,10 +602,10 @@ bool DashboardWidget::loadChartData(bool withMonthNames)
 
         chartData->xLabels << ((withMonthNames) ? monthsNames[num - 1] : QString::number(num));
 
-        chartData->valuesBall.append(piv);
+        chartData->valuesBall.append(ball);
         chartData->valueszBall.append(zball);
 
-        int max = std::max(piv, zball);
+        int max = std::max(ball, zball);
         if (max > chartData->maxValue) {
             chartData->maxValue = max;
         }
@@ -680,10 +680,10 @@ void DashboardWidget::onChartRefreshed()
     // Total
     nDisplayUnit = walletModel->getOptionsModel()->getDisplayUnit();
     if (chartData->totalBall > 0 || chartData->totalZball > 0) {
-        setCssProperty(ui->labelAmountBall, "text-stake-piv");
+        setCssProperty(ui->labelAmountBall, "text-stake-ball");
         setCssProperty(ui->labelAmountZball, "text-stake-zball");
     } else {
-        setCssProperty(ui->labelAmountBall, "text-stake-piv-disable");
+        setCssProperty(ui->labelAmountBall, "text-stake-ball-disable");
         setCssProperty(ui->labelAmountZball, "text-stake-zball-disable");
     }
     forceUpdateStyle({ui->labelAmountBall, ui->labelAmountZball});

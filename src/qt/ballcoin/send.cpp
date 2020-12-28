@@ -91,7 +91,7 @@ SendWidget::SendWidget(BALLCOINGUI* parent) :
     coinIcon->show();
     coinIcon->raise();
 
-    setCssProperty(coinIcon, "coin-icon-piv");
+    setCssProperty(coinIcon, "coin-icon-ball");
 
     QSize BUTTON_SIZE = QSize(24, 24);
     coinIcon->setMinimumSize(BUTTON_SIZE);
@@ -648,8 +648,8 @@ void SendWidget::onContactMultiClicked()
             inform(tr("Invalid address"));
             return;
         }
-        CTxDestination pivAdd = DecodeDestination(address.toStdString());
-        if (walletModel->isMine(pivAdd)) {
+        CTxDestination ballAdd = DecodeDestination(address.toStdString());
+        if (walletModel->isMine(ballAdd)) {
             inform(tr("Cannot store your own address as contact"));
             return;
         }
@@ -669,7 +669,7 @@ void SendWidget::onContactMultiClicked()
             if (label == dialog->getLabel()) {
                 return;
             }
-            if (walletModel->updateAddressBookLabels(pivAdd, dialog->getLabel().toStdString(),
+            if (walletModel->updateAddressBookLabels(ballAdd, dialog->getLabel().toStdString(),
                     AddressBook::AddressBookPurpose::SEND)) {
                 inform(tr("New Contact Stored"));
             } else {

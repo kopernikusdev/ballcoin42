@@ -90,7 +90,7 @@
         <file alias="ic-clear-purple">ballcoin/res/img/ic-clear-purple.svg</file>
         <file alias="ic-close-white">ballcoin/res/img/ic-close-white.svg</file>
         <file alias="ic-close">ballcoin/res/img/ic-close.svg</file>
-        <file alias="ic-coin-piv">ballcoin/res/img/ic-coin-piv.svg</file>
+        <file alias="ic-coin-ball">ballcoin/res/img/ic-coin-ball.svg</file>
         <file alias="ic-coin-zball">ballcoin/res/img/ic-coin-zball.svg</file>
         <file alias="ic-combo-box">ballcoin/res/img/ic-combo-box.svg</file>
         <file alias="ic-connect">ballcoin/res/img/ic-connect.svg</file>

@@ -63,13 +63,13 @@ class ZerocoinSpendTest(BALLcoinTestFramework):
         def get_zerocoin_data(coin):
             return coin["s"], coin["r"], coin["k"], coin["id"], coin["d"], coin["t"]
 
-        def check_balances(denom, zball_bal, piv_bal):
+        def check_balances(denom, zball_bal, ball_bal):
             zball_bal -= denom
             assert_equal(self.nodes[2].getzerocoinbalance()['Total'], zball_bal)
-            piv_bal += denom
+            ball_bal += denom
             wi = self.nodes[2].getwalletinfo()
-            assert_equal(wi['balance'] + wi['immature_balance'], piv_bal)
-            return zball_bal, piv_bal
+            assert_equal(wi['balance'] + wi['immature_balance'], ball_bal)
+            return zball_bal, ball_bal
 
         def stake_4_blocks(block_time):
             sync_mempools(self.nodes)

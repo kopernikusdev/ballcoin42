@@ -11,6 +11,6 @@ Type=Application
 Icon=${SNAP}/share/pixmaps/ballcoin.png
 MimeType=x-scheme-handler/ballcoin;
 Categories=X-Office;X-Finance;
-Keywords=internet;ballcoin;zball;piv;core;wallet;qt;main;snap;launchpad;crypto;digital;currency;coin;token;zerocoin;
+Keywords=internet;ballcoin;zball;ball;core;wallet;qt;main;snap;launchpad;crypto;digital;currency;coin;token;zerocoin;
 Version=1.0
 Name[de_DE]=ballcoin-qt.desktop
