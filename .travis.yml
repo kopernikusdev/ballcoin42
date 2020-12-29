@@ -103,7 +103,7 @@ jobs:
         GOAL="install"
         # -Wno-psabi is to disable ABI warnings: "note: parameter passing for argument of type ... changed in GCC 7.1"
         # This could be removed once the ABI change warning does not show up by default
-        BITCOIN_CONFIG="--with-gui=qt5 --enable-glibc-back-compat --enable-reduce-exports --disable-online-rust"
+        BITCOIN_CONFIG="--with-gui=qt5 --enable-glibc-back-compat --enable-reduce-exports CXXFLAGS=-Wno-psabi"
 
     - stage: test
       name: 'ARM 64-bit  [GOAL:install] [no unit or functional tests]'
